@@ -1,56 +1,44 @@
 import React from 'react'
-import { Button, StyleSheet, View, Platform, AsyncStorage } from 'react-native'
-import { NativeRouter, Route, Link } from 'react-router-native'
 
-import { ApplicationProvider, Layout, Text } from '@ui-kitten/components'
+import { AsyncStorage } from 'react-native'
+import { NativeRouter, Route } from 'react-router-native'
+
+import { ApplicationProvider, IconRegistry } from '@ui-kitten/components'
 import { mapping, light as lightTheme } from '@eva-design/eva'
 
-import { ApolloClient } from 'apollo-client'
+import ApolloClient from 'apollo-boost'
 import { ApolloProvider } from '@apollo/react-hooks'
 
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import { createHttpLink } from 'apollo-link-http'
-import { setContext } from 'apollo-link-context'
-
-import apolloLogger from 'apollo-link-logger'
-
+import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import Auth from './components/Auth'
 import Panel from './components/Panel'
 
-const cache = new InMemoryCache()
-const httpLink = new createHttpLink({
-  uri: 'https://jeffe.co/graphql',
-  credentials: 'include'
-})
+const client = new ApolloClient({
+  uri: 'http://192.168.8.100:80/graphql',
 
-const authLink = setContext(async (_, { headers }) => {
-  const token = await AsyncStorage.getItem('sid')
-  console.log('REQ')
-
-  return {
-    ...headers,
-    headers: {
-      Cookie: token ? `connect.sid=${token};sid=${token}` : null
-    }
+  request: async operation => {
+    const token = await AsyncStorage.getItem('sid')
+    console.log(token)
+    operation.setContext({
+      headers: {
+        Cookie: token ? `sid=${token}` : 'EIPÄ OLLU'
+      }
+    })
   }
 })
 
-const client = new ApolloClient({
-  link: authLink.concat(httpLink),
-  cache
-})
-
-client.resetStore()
-
 const App = () => (
-  <ApplicationProvider mapping={mapping} theme={lightTheme}>
-    <ApolloProvider client={client}>
-      <NativeRouter>
-        <Route exact path="/" component={Auth} />
-        <Route path="/panel/:id" component={Panel} />
-      </NativeRouter>
-    </ApolloProvider>
-  </ApplicationProvider>
+  <>
+    <IconRegistry icons={EvaIconsPack} />
+    <ApplicationProvider mapping={mapping} theme={lightTheme}>
+      <ApolloProvider client={client}>
+        <NativeRouter>
+          <Route exact path="/" component={Auth} />
+          <Route path="/panel/:id" component={Panel} />
+        </NativeRouter>
+      </ApolloProvider>
+    </ApplicationProvider>
+  </>
 )
 
 export default App

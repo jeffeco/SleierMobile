@@ -1,26 +1,42 @@
 import React from 'react'
 import {
-  Button,
   StyleSheet,
-  Text,
+  ActivityIndicator,
   View,
   Platform,
-  AsyncStorage
+  AsyncStorage,
+  Image
 } from 'react-native'
-import { AuthSession, Linking } from 'expo'
+import { Linking } from 'expo'
 import * as WebBrowser from 'expo-web-browser'
+import Logo from '../assets/jeffe.png'
+import styled from 'styled-components'
 
 import Logged from './Logged'
+
+import { Button, Card, CardHeader, Text } from '@ui-kitten/components'
+
+const Notifce = styled.Text`
+  opacity: 0.2;
+  margin-top: 100%;
+  text-align: center;
+`
+
+const Header = () => (
+  <CardHeader title="Sleier beta" description="Mobiiliversio" />
+)
+
 export default class Login extends React.Component {
   state = {
-    authResult: {}
+    authResult: { type: 'loading' }
   }
 
   async componentDidMount() {
     const value = await AsyncStorage.getItem('sid')
     if (value) {
-      console.log(value, 'auth')
       this.setState({ authResult: { type: 'success' } })
+    } else {
+      this.setState({ authResult: { type: 'kusi' } })
     }
   }
 
@@ -32,23 +48,62 @@ export default class Login extends React.Component {
       return (
         <View>
           {/* eslint-disable-next-line react/jsx-handler-names */}
-          <Logged />
+          <Logged
+            logout={async () => {
+              await AsyncStorage.clear()
+              this.setState({ authResult: { type: 'not good' } })
+              console.log('Cleared ')
+            }}
+          />
         </View>
+      )
+    } else if (
+      this.state.authResult.type &&
+      this.state.authResult.type === 'loading'
+    ) {
+      return (
+        <ActivityIndicator
+          style={{ marginTop: 45 }}
+          size="large"
+          color="#0000ff"
+        />
       )
     } else {
       return (
         <View style={styles.container}>
-          <Button title="Kirjaudu sisään" onPress={this.handleOAuthLogin} />
+          <View
+            style={{ display: 'flex', alignItems: 'center', marginBottom: 18 }}>
+            <Image style={{ width: 160, height: 34 }} source={Logo} />
+          </View>
+
+          <Card
+            header={Header}
+            footer={() => (
+              <View style={styles.footerContainer}>
+                <Button
+                  onPress={this.handleOAuthLogin}
+                  style={styles.footerControl}
+                  size="small">
+                  Kirjaudu sisään
+                </Button>
+              </View>
+            )}>
+            <Text>BETA TAI JOTAI</Text>
+            <Text>Asiat jotka ei toimi / on bugisia:</Text>
+            <Text>Kirjautuminen, voluumin vaihto ja musiikin lisääminen </Text>
+          </Card>
+          <Notifce>JEFFe Mobiili BETA © 2020 JEFFe</Notifce>
         </View>
       )
     }
   }
 
   handleRedirect = async ({ url }) => {
-    console.log(url)
     if (url.split('?')[1]) {
       const sid = url.split('?')[1].split('=')[1]
       await AsyncStorage.setItem('sid', sid)
+      this.setState({ authResult: { type: 'success' } })
+      console.log('SID TALLESSA', sid)
     }
     if (Platform.OS === 'ios') {
       WebBrowser.dismissBrowser()
@@ -63,11 +118,10 @@ export default class Login extends React.Component {
     // this should change depending on where the server is running
     this.addLinkingListener()
     try {
-      const authResult = await WebBrowser.openAuthSessionAsync(
-        `https://jeffe.co/auth/discord?deeplink=${backUrl}`,
+      await WebBrowser.openAuthSessionAsync(
+        `http://192.168.8.100:80/auth/discord?deeplink=${backUrl}`,
         redirectUrl
       )
-      await this.setState({ authResult: authResult })
     } catch (err) {
       console.log('ERROR:', err)
     }
@@ -84,8 +138,6 @@ export default class Login extends React.Component {
 }
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center'
+    marginTop: 45
   }
 })

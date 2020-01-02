@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react'
-import { Button, StyleSheet, View, Platform, Image } from 'react-native'
+import React from 'react'
+import { ActivityIndicator } from 'react-native'
 import { useHistory } from 'react-router-native'
 import styled from 'styled-components'
-import { Card, Text } from '@ui-kitten/components'
+import { Card, Text, Button } from '@ui-kitten/components'
 
 import gql from 'graphql-tag'
 import { useQuery } from '@apollo/react-hooks'
 
-import Jeffe from '../assets/jeffe.png'
 const Kortti = styled(Card)`
   max-width: 90%;
   width: 100%;
@@ -19,13 +18,19 @@ const Kortti = styled(Card)`
 const Username = styled.Text`
   font-size: 44px;
   margin: 0 auto;
+  font-weight: 700;
 `
 const Grid = styled.View`
   display: flex;
   flex-direction: column;
 `
 const Wrapper = styled.View`
-  margin-top: 25px;
+  margin-top: 35px;
+`
+const Notifce = styled.Text`
+  opacity: 0.2;
+  margin-top: 100%;
+  text-align: center;
 `
 
 const GET_USER = gql`
@@ -44,18 +49,25 @@ const GET_USER = gql`
 
 function Logged(props) {
   const history = useHistory()
-  const { loading, error, data } = useQuery(GET_USER)
-
+  const { loading, error, data } = useQuery(GET_USER, {
+    // fetchPolicy: 'cache-and-network'
+  })
   if (loading)
     return (
-      <Wrapper>
-        <Text>Loading...</Text>
-      </Wrapper>
+      <ActivityIndicator
+        style={{ marginTop: 45 }}
+        size="large"
+        color="#0000ff"
+      />
     )
   if (error) {
     return (
       <Wrapper>
         <Text>Error! ${error.message}</Text>
+
+        <Text>Kannattaa koittaa kirjautua ulos ja takaisin sisään</Text>
+
+        <Button onPress={() => props.logout()}>Kirjaudu ulos</Button>
       </Wrapper>
     )
   }
@@ -79,6 +91,15 @@ function Logged(props) {
           )
         })}
       </Grid>
+
+      <Button
+        style={{ marginTop: 20 }}
+        appearance="ghost"
+        onPress={() => props.logout()}>
+        Kirjaudu ulos
+      </Button>
+
+      <Notifce>JEFFe Mobiili BETA © 2020 JEFFe</Notifce>
     </Wrapper>
   )
 }
