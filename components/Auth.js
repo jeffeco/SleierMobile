@@ -12,10 +12,10 @@ import * as WebBrowser from 'expo-web-browser'
 import Logo from '../assets/jeffe.png'
 import styled from 'styled-components'
 
+import { server } from './../config.json'
 import Logged from './Logged'
 
 import { Button, Card, CardHeader, Text } from '@ui-kitten/components'
-
 const Notifce = styled.Text`
   opacity: 0.2;
   margin-top: 100%;
@@ -34,8 +34,10 @@ export default class Login extends React.Component {
   async componentDidMount() {
     const value = await AsyncStorage.getItem('sid')
     if (value) {
+      if (this.state.authResult.type == 'success') return
       this.setState({ authResult: { type: 'success' } })
     } else {
+      if (this.state.authResult.type == 'kusi') return
       this.setState({ authResult: { type: 'kusi' } })
     }
   }
@@ -115,11 +117,12 @@ export default class Login extends React.Component {
     const redirectUrl = await Linking.getInitialURL()
     const backUrl = await Linking.makeUrl()
 
+    console.log(redirectUrl, backUrl)
     // this should change depending on where the server is running
     this.addLinkingListener()
     try {
       await WebBrowser.openAuthSessionAsync(
-        `http://192.168.8.100:80/auth/discord?deeplink=${backUrl}`,
+        `${server}/auth/discord?deeplink=${backUrl}`,
         redirectUrl
       )
     } catch (err) {

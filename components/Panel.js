@@ -7,7 +7,9 @@ import io from 'socket.io-client'
 import gql from 'graphql-tag'
 import { useQuery } from '@apollo/react-hooks'
 import SongControl from './SongControl'
-const socket = io('http://192.168.8.100:80')
+import { server } from './../config.json'
+
+const socket = io(server)
 
 const Wrapper = styled.View`
   margin-top: 35px;

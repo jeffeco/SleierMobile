@@ -1,5 +1,5 @@
 import React from 'react'
-import { ActivityIndicator } from 'react-native'
+import { ActivityIndicator, ScrollView } from 'react-native'
 import { useHistory } from 'react-router-native'
 import styled from 'styled-components'
 import { Card, Text, Button } from '@ui-kitten/components'
@@ -24,7 +24,7 @@ const Grid = styled.View`
   display: flex;
   flex-direction: column;
 `
-const Wrapper = styled.View`
+const Wrapper = styled(ScrollView)`
   margin-top: 35px;
 `
 const Notifce = styled.Text`
@@ -50,7 +50,7 @@ const GET_USER = gql`
 function Logged(props) {
   const history = useHistory()
   const { loading, error, data } = useQuery(GET_USER, {
-    // fetchPolicy: 'cache-and-network'
+    fetchPolicy: 'no-cache'
   })
   if (loading)
     return (

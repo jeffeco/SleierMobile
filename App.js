@@ -12,13 +12,13 @@ import { ApolloProvider } from '@apollo/react-hooks'
 import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import Auth from './components/Auth'
 import Panel from './components/Panel'
+import { server } from './config.json'
 
 const client = new ApolloClient({
-  uri: 'http://192.168.8.100:80/graphql',
+  uri: `${server}/graphql`,
 
   request: async operation => {
     const token = await AsyncStorage.getItem('sid')
-    console.log(token)
     operation.setContext({
       headers: {
         Cookie: token ? `sid=${token}` : 'EIPÄ OLLU'
